@@ -48,6 +48,7 @@ public class ProductController {
         product.setPrice(productDetails.getPrice());
         product.setCategory(productDetails.getCategory());
         product.setStock(productDetails.getStock());
+        product.setReorderLevel(productDetails.getReorderLevel());
         product.setUnit(productDetails.getUnit());
 
         product.getSubProducts().clear();

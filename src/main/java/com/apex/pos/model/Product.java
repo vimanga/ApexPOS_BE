@@ -27,6 +27,7 @@ public class Product {
     private double price;
     private String category;
     private int stock;
+    private int reorderLevel = 5;
     private String unit;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -43,6 +44,7 @@ public class Product {
         this.price = price;
         this.category = category;
         this.stock = stock;
+        this.reorderLevel = 5;
         this.unit = unit;
     }
 
@@ -53,6 +55,7 @@ public class Product {
         this.price = price;
         this.category = category;
         this.stock = stock;
+        this.reorderLevel = 5;
         this.unit = unit;
         this.subProducts = subProducts != null ? subProducts : new ArrayList<>();
     }
@@ -103,6 +106,14 @@ public class Product {
 
     public void setStock(int stock) {
         this.stock = stock;
+    }
+
+    public int getReorderLevel() {
+        return reorderLevel;
+    }
+
+    public void setReorderLevel(int reorderLevel) {
+        this.reorderLevel = reorderLevel;
     }
 
     public String getUnit() {
