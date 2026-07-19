@@ -7,6 +7,7 @@
 /Users/vimangabalalla/Documents/myProjects/Apex/pos/backend/src/main/java/com/apex/pos/dto/CheckoutRequest.java
 /Users/vimangabalalla/Documents/myProjects/Apex/pos/backend/src/main/java/com/apex/pos/dto/LoginRequest.java
 /Users/vimangabalalla/Documents/myProjects/Apex/pos/backend/src/main/java/com/apex/pos/model/Product.java
+/Users/vimangabalalla/Documents/myProjects/Apex/pos/backend/src/main/java/com/apex/pos/model/SubProduct.java
 /Users/vimangabalalla/Documents/myProjects/Apex/pos/backend/src/main/java/com/apex/pos/model/Transaction.java
 /Users/vimangabalalla/Documents/myProjects/Apex/pos/backend/src/main/java/com/apex/pos/model/TransactionItem.java
 /Users/vimangabalalla/Documents/myProjects/Apex/pos/backend/src/main/java/com/apex/pos/model/User.java

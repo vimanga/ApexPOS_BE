@@ -15,19 +15,32 @@ public class TransactionItem {
     private Long id;
 
     private String productId;
+    private String subProductId;
     private String name;
     private double price;
     private int quantity;
+    private double discountPercent;
     private double total;
 
     public TransactionItem() {
     }
 
-    public TransactionItem(String productId, String name, double price, int quantity, double total) {
+    public TransactionItem(String productId, String name, double price, int quantity, double discountPercent, double total) {
         this.productId = productId;
         this.name = name;
         this.price = price;
         this.quantity = quantity;
+        this.discountPercent = discountPercent;
+        this.total = total;
+    }
+
+    public TransactionItem(String productId, String subProductId, String name, double price, int quantity, double discountPercent, double total) {
+        this.productId = productId;
+        this.subProductId = subProductId;
+        this.name = name;
+        this.price = price;
+        this.quantity = quantity;
+        this.discountPercent = discountPercent;
         this.total = total;
     }
 
@@ -77,5 +90,21 @@ public class TransactionItem {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public String getSubProductId() {
+        return subProductId;
+    }
+
+    public void setSubProductId(String subProductId) {
+        this.subProductId = subProductId;
+    }
+
+    public double getDiscountPercent() {
+        return discountPercent;
+    }
+
+    public void setDiscountPercent(double discountPercent) {
+        this.discountPercent = discountPercent;
     }
 }

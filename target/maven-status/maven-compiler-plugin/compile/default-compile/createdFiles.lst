@@ -16,3 +16,4 @@ com/apex/pos/model/TransactionItem.class
 com/apex/pos/model/User.class
 com/apex/pos/controller/AuthController.class
 com/apex/pos/dto/LoginRequest.class
+com/apex/pos/model/SubProduct.class

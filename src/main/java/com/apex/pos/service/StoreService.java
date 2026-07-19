@@ -3,6 +3,7 @@ package com.apex.pos.service;
 import com.apex.pos.dto.CheckoutItemRequest;
 import com.apex.pos.dto.CheckoutRequest;
 import com.apex.pos.model.Product;
+import com.apex.pos.model.SubProduct;
 import com.apex.pos.model.Transaction;
 import com.apex.pos.model.TransactionItem;
 import com.apex.pos.model.User;
@@ -50,15 +51,27 @@ public class StoreService {
         userRepository.save(new User("jane", "password", "cashier", "Jane Smith"));
 
         // 2. Seed Products
+        Product milk = new Product("p1", "50102030401", "Fresh Milk 1L", 3.5, "Dairy", 45, "bottle");
+        milk.getSubProducts().addAll(List.of(
+            new SubProduct("sp1-1", "50102030401-1", "Old stock (10% Discount)", 3.15, 15),
+            new SubProduct("sp1-2", "50102030401-2", "New stock", 3.50, 30)
+        ));
+
+        Product apples = new Product("p8", "50102030408", "Apples Gala (1kg)", 3.9, "Produce", 60, "bag");
+        apples.getSubProducts().addAll(List.of(
+            new SubProduct("sp8-1", "50102030408-1", "Premium quality", 4.90, 20),
+            new SubProduct("sp8-2", "50102030408-2", "Standard quality", 3.90, 40)
+        ));
+
         List<Product> products = List.of(
-            new Product("p1", "50102030401", "Fresh Milk 1L", 3.5, "Dairy", 45, "bottle"),
+            milk,
             new Product("p2", "50102030402", "Whole Grain Bread 500g", 2.2, "Bakery", 20, "loaf"),
             new Product("p3", "50102030403", "Organic Eggs 12pk", 4.8, "Dairy", 12, "pack"),
             new Product("p4", "50102030404", "Coca Cola 1.5L", 1.8, "Beverages", 80, "bottle"),
             new Product("p5", "50102030405", "Basmati Rice 5kg", 12.5, "Pantry", 35, "bag"),
             new Product("p6", "50102030406", "Spaghetti Pasta 500g", 1.1, "Pantry", 50, "pack"),
             new Product("p7", "50102030407", "Tomato Ketchup 500ml", 2.7, "Pantry", 3, "bottle"),
-            new Product("p8", "50102030408", "Apples Gala (1kg)", 3.9, "Produce", 60, "bag"),
+            apples,
             new Product("p9", "50102030409", "Bananas Cavendish (1kg)", 2.5, "Produce", 55, "bag"),
             new Product("p10", "50102030410", "Detergent Liquid 2L", 9.8, "Household", 15, "bottle"),
             new Product("p11", "50102030411", "Potato Chips 150g", 1.9, "Snacks", 2, "pack"),
@@ -80,8 +93,8 @@ public class StoreService {
         tx1.setTotal(9.94);
         tx1.setCreatedAt(now.minus(4, ChronoUnit.HOURS).toString());
         List<TransactionItem> items1 = List.of(
-            new TransactionItem("p1", "Fresh Milk 1L", 3.5, 2, 7.0),
-            new TransactionItem("p2", "Whole Grain Bread 500g", 2.2, 1, 2.2)
+            new TransactionItem("p1", "Fresh Milk 1L", 3.5, 2, 0.0, 7.0),
+            new TransactionItem("p2", "Whole Grain Bread 500g", 2.2, 1, 0.0, 2.2)
         );
         tx1.getItems().addAll(items1);
         transactionRepository.save(tx1);
@@ -97,9 +110,9 @@ public class StoreService {
         tx2.setTotal(25.76);
         tx2.setCreatedAt(now.minus(2, ChronoUnit.HOURS).minus(30, ChronoUnit.MINUTES).toString());
         List<TransactionItem> items2 = List.of(
-            new TransactionItem("p5", "Basmati Rice 5kg", 12.5, 1, 12.5),
-            new TransactionItem("p8", "Apples Gala (1kg)", 3.9, 2, 7.8),
-            new TransactionItem("p4", "Coca Cola 1.5L", 1.8, 3, 5.4)
+            new TransactionItem("p5", "Basmati Rice 5kg", 12.5, 1, 0.0, 12.5),
+            new TransactionItem("p8", "Apples Gala (1kg)", 3.9, 2, 0.0, 7.8),
+            new TransactionItem("p4", "Coca Cola 1.5L", 1.8, 3, 0.0, 5.4)
         );
         tx2.getItems().addAll(items2);
         transactionRepository.save(tx2);
@@ -115,8 +128,8 @@ public class StoreService {
         tx3.setTotal(15.34);
         tx3.setCreatedAt(now.minus(50, ChronoUnit.MINUTES).toString());
         List<TransactionItem> items3 = List.of(
-            new TransactionItem("p10", "Detergent Liquid 2L", 9.8, 1, 9.8),
-            new TransactionItem("p6", "Spaghetti Pasta 500g", 1.1, 4, 4.4)
+            new TransactionItem("p10", "Detergent Liquid 2L", 9.8, 1, 0.0, 9.8),
+            new TransactionItem("p6", "Spaghetti Pasta 500g", 1.1, 4, 0.0, 4.4)
         );
         tx3.getItems().addAll(items3);
         transactionRepository.save(tx3);
@@ -135,23 +148,55 @@ public class StoreService {
             Product product = productRepository.findById(itemReq.getProductId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + itemReq.getProductId()));
 
-            if (product.getStock() < itemReq.getQuantity()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock for " + product.getName());
+            double itemPrice = 0;
+            String itemName = "";
+            String txItemId = "";
+            String txSubItemId = null;
+
+            if (itemReq.getSubProductId() != null && !itemReq.getSubProductId().isEmpty()) {
+                // Find subproduct
+                SubProduct subProduct = product.getSubProducts().stream()
+                    .filter(sp -> sp.getId().equals(itemReq.getSubProductId()))
+                    .findFirst()
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subproduct not found: " + itemReq.getSubProductId()));
+
+                if (subProduct.getStock() < itemReq.getQuantity()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock for " + product.getName() + " - " + subProduct.getName());
+                }
+
+                // Deduct subproduct stock
+                subProduct.setStock(subProduct.getStock() - itemReq.getQuantity());
+                itemPrice = subProduct.getPrice();
+                itemName = product.getName() + " - " + subProduct.getName();
+                txItemId = product.getId();
+                txSubItemId = subProduct.getId();
+            } else {
+                if (product.getStock() < itemReq.getQuantity()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock for " + product.getName());
+                }
+
+                // Deduct product stock
+                product.setStock(product.getStock() - itemReq.getQuantity());
+                itemPrice = product.getPrice();
+                itemName = product.getName();
+                txItemId = product.getId();
+                txSubItemId = null;
             }
 
-            // Deduct stock
-            product.setStock(product.getStock() - itemReq.getQuantity());
             productRepository.save(product);
 
             // Create TransactionItem
-            double itemTotal = product.getPrice() * itemReq.getQuantity();
+            double discountFactor = 1.0 - (itemReq.getDiscountPercent() / 100.0);
+            double itemTotal = itemPrice * itemReq.getQuantity() * discountFactor;
             subtotal += itemTotal;
 
             TransactionItem txItem = new TransactionItem(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
+                txItemId,
+                txSubItemId,
+                itemName,
+                itemPrice,
                 itemReq.getQuantity(),
+                itemReq.getDiscountPercent(),
                 Math.round(itemTotal * 100.0) / 100.0
             );
             itemsToSave.add(txItem);

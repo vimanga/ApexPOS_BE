@@ -4,6 +4,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -23,6 +29,10 @@ public class Product {
     private int stock;
     private String unit;
 
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id")
+    private List<SubProduct> subProducts = new ArrayList<>();
+
     public Product() {
     }
 
@@ -34,6 +44,17 @@ public class Product {
         this.category = category;
         this.stock = stock;
         this.unit = unit;
+    }
+
+    public Product(String id, String sku, String name, double price, String category, int stock, String unit, List<SubProduct> subProducts) {
+        this.id = id;
+        this.sku = sku;
+        this.name = name;
+        this.price = price;
+        this.category = category;
+        this.stock = stock;
+        this.unit = unit;
+        this.subProducts = subProducts != null ? subProducts : new ArrayList<>();
     }
 
     public String getId() {
@@ -90,5 +111,13 @@ public class Product {
 
     public void setUnit(String unit) {
         this.unit = unit;
+    }
+
+    public List<SubProduct> getSubProducts() {
+        return subProducts;
+    }
+
+    public void setSubProducts(List<SubProduct> subProducts) {
+        this.subProducts = subProducts;
     }
 }
